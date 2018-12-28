@@ -6,6 +6,31 @@ var Util = (function() {
 
   return {
 
+
+    /**
+     * Is doc ready?
+     * A simple check for doc ready.
+     * Obvs not fool proof.
+     */
+    isReady: function() {
+      var state = document.readyState;
+      if ( state === 'interactive' || state === 'complete') {
+        return true;
+      }
+    },
+
+
+    /**
+     * ForEach Utility
+     * Ensure we can loop over a object or nodelist
+     * @see https://toddmotto.com/ditch-the-array-foreach-call-nodelist-hack/
+     */
+    forEach: function (array, callback, scope) {
+      for (var i = 0; i < array.length; i++) {
+        callback.call(scope, i, array[i]);
+      }
+    },
+
     /**
      * A render utility
      * @param {mixed} - A template
@@ -24,41 +49,6 @@ var Util = (function() {
 
 
     /**
-     * Is In View?
-     * A super simple in viewport check
-     * Would probs want to build this out a bit more
-     *
-     * @param  {el} Element to test
-     * @param  {threshold} Integar Amount of threshold
-     * @return {boolean}
-     */
-    isInView: function(el, threshold) {
-      // 'sup jquery
-      if (typeof jQuery === "function" && el instanceof jQuery) {
-        el = el[0];
-      }
-      var threshold = Math.floor(threshold * 100),
-          winY = window.innerHeight - threshold || document.documentElement.clientHeight - threshold,
-          bounds = el.getBoundingClientRect(),
-          isTopVisible = (bounds.top >= 0) && (bounds.top <= winY);
-
-      return isTopVisible;
-    },
-
-
-    /**
-     * ForEach Utility
-     * Ensure we can loop over a object or nodelist
-     * @see https://toddmotto.com/ditch-the-array-foreach-call-nodelist-hack/
-     */
-    forEach: function (array, callback, scope) {
-      for (var i = 0; i < array.length; i++) {
-        callback.call(scope, i, array[i]);
-      }
-    },
-
-
-    /**
      * Throttle Util
      * Stoopid simple throttle util to control scroll events and so on.
      *
@@ -66,22 +56,21 @@ var Util = (function() {
      * @param  {int}       milliseconds to throttle  method
      * @return {Function}  Returns a throttled function
      */
-    throttle: function(callback, ms) {
-      var wait = false;
-      return function () {
-          if (!wait) {
-              callback.call();
-              wait = true;
-              setTimeout(function () {
-                  wait = false;
-              }, ms);
-          }
-      };
-    },
+     throttle: function(fn, wait) {
+       var time = Date.now();
+       return function() {
+         if ((time + wait - Date.now()) < 0) {
+           fn();
+           time = Date.now();
+         }
+       }
+     },
 
 
     /**
      * Has Class
+     * @param {html element} el to check against
+     * @param {string} className - class name to check
      */
     hasClass: function(el, className) {
       if (el.classList.contains(className)){
@@ -92,6 +81,7 @@ var Util = (function() {
 
     /**
      * toggle/add/remove
+     * @param {html element} el - the element
      */
     classList: function(el) {
       var list = el.classList;
@@ -101,6 +91,23 @@ var Util = (function() {
           add:    function(c) { list.add   (c); return this; },
           remove: function(c) { list.remove(c); return this; }
       };
+    },
+
+    /**
+     * Get an Elements Width
+     * @param {html element} el - the element
+     */
+    getWidth: function(el) {
+      return el.innerWidth || el.clientWidth;
+    },
+
+    /**
+     * Set an Elements Width
+     * @param {html element} el - the element
+     * @param {Integar} width - desired width
+     */
+    setWidth: function(el, width) {
+      el.style.width = width + 'px';
     },
 
 
@@ -125,7 +132,6 @@ var Util = (function() {
       }
     },
 
-
     /**
      * Get the value of a query string
      * @param  {String} field The field to get the value of
@@ -138,7 +144,7 @@ var Util = (function() {
     	var string = reg.exec(href);
     	return string ? string[1] : null;
     },
-    
+
 
     /**
      * JSONP Helper to load external data
